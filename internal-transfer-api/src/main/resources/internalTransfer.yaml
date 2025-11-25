@@ -1,0 +1,159 @@
+openapi: 3.0.3
+info:
+  title: Internal Transfers API
+  version: 1.0.0
+
+paths:
+  /accounts:
+    post:
+      summary: Create a new account
+      operationId: createAccount
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountCreateRequest'
+      responses:
+        '200':
+          description: Account created successfully (empty response)
+          content: {}
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /accounts/{account_id}:
+    get:
+      summary: Get account balance
+      operationId: getAccountById
+      tags:
+        - Account
+      parameters:
+        - in: path
+          name: account_id
+          schema:
+            type: integer
+            format: int64
+          required: true
+      responses:
+        '200':
+          description: Account balance retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transactions:
+    post:
+      summary: Submit a transaction
+      operationId: createTransaction
+      tags:
+        - Transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionRequest'
+      responses:
+        '200':
+          description: Transaction processed successfully (empty response)
+          content: {}
+        '400':
+          description: Invalid input / insufficient balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Transaction failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    AccountCreateRequest:
+      type: object
+      properties:
+        account_id:
+          type: integer
+          format: int64
+        initial_balance:
+          type: string
+          format: decimal
+      required:
+        - account_id
+        - initial_balance
+
+    AccountResponse:
+      type: object
+      properties:
+        account_id:
+          type: integer
+          format: int64
+        balance:
+          type: string
+          format: decimal
+      required:
+        - account_id
+        - balance
+
+    TransactionRequest:
+      type: object
+      properties:
+        source_account_id:
+          type: integer
+          format: int64
+        destination_account_id:
+          type: integer
+          format: int64
+        amount:
+          type: string
+          format: decimal
+      required:
+        - source_account_id
+        - destination_account_id
+        - amount
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+
+    TransactionStatus:
+      type: string
+      enum:
+        - PENDING
+        - SUCCESS
+        - FAILED
